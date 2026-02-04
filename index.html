@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>250-Piece Jigsaw Puzzle</title>
+  <title>100-Piece Jigsaw Puzzle</title>
   <style>
     :root{
       --bg1:#0b1020;
@@ -218,12 +218,12 @@
 <body>
   <header>
     <div class="brand">
-      <h1>250-Piece Online Puzzle</h1>
-      <p>Drag pieces from the pile onto the board. They snap when close.</p>
+      <h1>100-Piece Jigsaw Puzzle</h1>
+      <p>10 × 10 (ideal square grid). Drag pieces onto the board and they snap into place.</p>
     </div>
 
     <div class="hud">
-      <div class="pill"><b>Pieces</b> <span><span id="doneCount">0</span>/250</span></div>
+      <div class="pill"><b>Pieces</b> <span><span id="doneCount">0</span>/100</span></div>
       <div class="pill"><b>Time</b> <span id="time">00:00</span></div>
       <button class="btn secondary" id="toggleGuide">Toggle Grid</button>
       <button class="btn secondary" id="togglePreview">Preview</button>
@@ -239,14 +239,14 @@
       </div>
       <div class="pile" id="pile"></div>
       <div class="pileHint">
-        Tip: On mobile, zoom out a bit and drag slowly. Pieces snap when close to the correct spot.
+        Tip: If pieces feel “too snappy,” I can reduce the snap distance. If they feel hard to place, I can increase it.
       </div>
     </section>
 
     <section class="panel boardPanel">
       <div class="panelHead">
         <h2>Board</h2>
-        <small>25 × 10 grid</small>
+        <small>10 × 10 grid</small>
       </div>
       <div class="boardWrap">
         <div class="board" id="board">
@@ -270,24 +270,17 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    /*********************
-     *  Load image from file
-     *********************/
-    const IMAGE_URL = "./puzzle.jpg";   // <— keep this name the same
+    const IMAGE_URL = "./puzzle.jpg";
 
-    /*********************
-     *  Puzzle settings
-     *********************/
-    const COLS = 25;
+    // Ideal 100-piece grid
+    const COLS = 10;
     const ROWS = 10;
     const TOTAL = COLS * ROWS;
 
-    const SNAP_FACTOR = 0.22;  // snap distance = min(tileW,tileH) * this
+    // Snap distance = min(tileW, tileH) * factor
+    const SNAP_FACTOR = 0.23;
     const PILE_PADDING = 10;
 
-    /*********************
-     *  DOM
-     *********************/
     const pileEl = document.getElementById("pile");
     const boardEl = document.getElementById("board");
     const gridOverlayEl = document.getElementById("gridOverlay");
@@ -305,9 +298,6 @@
     const closeModalBtn = document.getElementById("closeModal");
     const toggleGuideBtn = document.getElementById("toggleGuide");
 
-    /*********************
-     *  State
-     *********************/
     const img = new Image();
     img.src = IMAGE_URL;
 
@@ -315,7 +305,7 @@
     let tileW = 0, tileH = 0;
     let snapDist = 0;
 
-    let pieces = []; // {el, col,row, correctX,correctY, locked, ...}
+    let pieces = [];
     let doneCount = 0;
     let zTop = 10;
 
@@ -323,7 +313,6 @@
     let timerRAF = null;
 
     function pad2(n){ return String(n).padStart(2,"0"); }
-
     function startTimer(){
       if(startTime) return;
       startTime = performance.now();
@@ -366,7 +355,7 @@
     }
 
     function computeBoardSize(){
-      const wrap = boardEl.parentElement; // boardWrap
+      const wrap = boardEl.parentElement;
       const maxW = wrap.clientWidth - 24;
       const maxH = wrap.clientHeight - 24;
 
@@ -378,7 +367,6 @@
         h = maxH;
         w = h * aspect;
       }
-
       w = Math.max(320, w);
       h = w / aspect;
 
@@ -400,19 +388,14 @@
 
       gridOverlayEl.style.backgroundSize = `${tileW}px ${tileH}px`;
 
-      // Resize pieces & correct positions
       for(const p of pieces){
         p.correctX = p.col * tileW;
         p.correctY = p.row * tileH;
-
         p.el.style.width = tileW + "px";
         p.el.style.height = tileH + "px";
         p.el.style.backgroundSize = `${boardW}px ${boardH}px`;
         p.el.style.backgroundPosition = `${-p.correctX}px ${-p.correctY}px`;
-
-        if(p.locked){
-          setPiecePos(p, p.correctX, p.correctY, boardEl);
-        }
+        if(p.locked) setPiecePos(p, p.correctX, p.correctY, boardEl);
       }
     }
 
@@ -441,7 +424,7 @@
         el.setPointerCapture(e.pointerId);
         el.style.zIndex = (++zTop).toString();
 
-        const container = el.parentElement; // pile or board
+        const container = el.parentElement;
         const pos = getRelativePos(e, container);
 
         const left = parseFloat(el.style.left) || 0;
@@ -514,10 +497,10 @@
         doneCount++;
         doneCountEl.textContent = String(doneCount);
 
-        if(doneCount % 25 === 0) toast(`Nice! ${doneCount}/250`);
+        if(doneCount % 10 === 0) toast(`Nice! ${doneCount}/100`);
         if(doneCount === TOTAL){
           stopTimer();
-          openModal("You finished! 🎉", `250/250 pieces completed in ${timeEl.textContent}.`, true);
+          openModal("You finished! 🎉", `100/100 pieces completed in ${timeEl.textContent}.`, true);
         }
       }
     }
@@ -565,7 +548,7 @@
           pieces.push(piece);
         }
       }
-      toast("Pieces created: 250");
+      toast("Pieces created: 100");
     }
 
     function shufflePieces(){
@@ -622,10 +605,10 @@
     window.addEventListener("resize", () => computeBoardSize());
 
     img.onload = () => {
-      // Build and shuffle once image loads
       buildPieces();
       shufflePieces();
-      // Also preload preview image inside modal box
+
+      // preload preview image
       const im = document.createElement("img");
       im.src = IMAGE_URL;
       im.alt = "Puzzle preview";
@@ -637,7 +620,7 @@
     img.onerror = () => {
       openModal(
         "Error",
-        "Could not load puzzle.jpg. Make sure the file is named exactly 'puzzle.jpg' and is in the same folder as index.html.",
+        "Could not load puzzle.jpg. Make sure it is named exactly 'puzzle.jpg' and is in the same folder as index.html.",
         false
       );
     };
