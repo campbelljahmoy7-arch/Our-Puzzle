@@ -3,22 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>250-Piece Puzzle</title>
+  <title>250-Piece Jigsaw Puzzle</title>
   <style>
     :root{
       --bg1:#0b1020;
       --bg2:#0f2a3d;
       --card: rgba(255,255,255,.08);
-      --card2: rgba(255,255,255,.12);
       --text: #e9f2ff;
-      --muted: rgba(233,242,255,.7);
+      --muted: rgba(233,242,255,.72);
       --accent: #7dd3fc;
       --good: #86efac;
-      --warn: #fbbf24;
       --shadow: 0 18px 50px rgba(0,0,0,.35);
       --radius: 18px;
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -31,7 +28,6 @@
       display:flex;
       flex-direction:column;
     }
-
     header{
       padding:18px 16px 12px;
       display:flex;
@@ -40,23 +36,11 @@
       gap:12px;
       flex-wrap:wrap;
     }
-    .brand{
-      display:flex; flex-direction:column; gap:2px;
-    }
-    .brand h1{
-      font-size:18px; margin:0; letter-spacing:.2px;
-    }
-    .brand p{
-      margin:0; font-size:13px; color:var(--muted);
-    }
+    .brand{display:flex; flex-direction:column; gap:2px;}
+    .brand h1{font-size:18px; margin:0; letter-spacing:.2px;}
+    .brand p{margin:0; font-size:13px; color:var(--muted);}
 
-    .hud{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-    }
+    .hud{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end;}
     .pill{
       background: var(--card);
       border: 1px solid rgba(255,255,255,.12);
@@ -99,7 +83,6 @@
       align-items:stretch;
       justify-content:center;
     }
-
     .panel{
       background: var(--card);
       border: 1px solid rgba(255,255,255,.12);
@@ -111,7 +94,6 @@
       flex-direction:column;
       min-height: 70vh;
     }
-
     .panelHead{
       padding:12px 12px;
       display:flex;
@@ -121,16 +103,9 @@
       border-bottom: 1px solid rgba(255,255,255,.10);
       background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
     }
-    .panelHead h2{
-      font-size:14px;
-      margin:0;
-      letter-spacing:.2px;
-    }
-    .panelHead small{
-      color: var(--muted);
-    }
+    .panelHead h2{font-size:14px; margin:0; letter-spacing:.2px;}
+    .panelHead small{color: var(--muted);}
 
-    /* Layout: pile left, board right (desktop), stacked (mobile) */
     .pilePanel{ width: min(420px, 32vw); }
     .boardPanel{ flex:1; min-width: 320px; }
 
@@ -140,7 +115,6 @@
       .boardPanel{ width: 100%; }
     }
 
-    /* Pile area */
     .pile{
       position:relative;
       flex:1;
@@ -155,7 +129,6 @@
       background: rgba(0,0,0,.08);
     }
 
-    /* Board area */
     .boardWrap{
       position:relative;
       flex:1;
@@ -183,7 +156,6 @@
       background-size: var(--tileW) var(--tileH);
     }
 
-    /* Pieces */
     .piece{
       position:absolute;
       border-radius: 10px;
@@ -194,16 +166,14 @@
       cursor: grab;
       user-select:none;
       touch-action:none;
-      will-change: transform;
+      will-change: left, top;
     }
     .piece:active{ cursor: grabbing; }
     .piece.locked{
       border-color: rgba(134,239,172,.55);
-      box-shadow: 0 12px 34px rgba(0,0,0,.22);
       cursor: default;
     }
 
-    /* Modal */
     .modal{
       position:fixed; inset:0;
       display:none;
@@ -224,11 +194,8 @@
     }
     .modalCard h3{ margin:0 0 8px; font-size:18px; }
     .modalCard p{ margin:0 0 12px; color:var(--muted); line-height:1.45; }
-    .modalRow{
-      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
-    }
+    .modalRow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
 
-    /* Tiny toast */
     .toast{
       position: fixed;
       left: 50%;
@@ -247,6 +214,7 @@
     .toast.show{ display:block; }
   </style>
 </head>
+
 <body>
   <header>
     <div class="brand">
@@ -258,8 +226,8 @@
       <div class="pill"><b>Pieces</b> <span><span id="doneCount">0</span>/250</span></div>
       <div class="pill"><b>Time</b> <span id="time">00:00</span></div>
       <button class="btn secondary" id="toggleGuide">Toggle Grid</button>
+      <button class="btn secondary" id="togglePreview">Preview</button>
       <button class="btn" id="shuffle">Shuffle</button>
-      <button class="btn secondary" id="preview">Preview</button>
     </div>
   </header>
 
@@ -267,18 +235,18 @@
     <section class="panel pilePanel">
       <div class="panelHead">
         <h2>Piece Pile</h2>
-        <small id="pileInfo">drag pieces out</small>
+        <small>drag pieces out</small>
       </div>
       <div class="pile" id="pile"></div>
       <div class="pileHint">
-        Tip: If you’re on mobile, zoom out a bit and drag slowly. Pieces snap when close to the correct spot.
+        Tip: On mobile, zoom out a bit and drag slowly. Pieces snap when close to the correct spot.
       </div>
     </section>
 
     <section class="panel boardPanel">
       <div class="panelHead">
         <h2>Board</h2>
-        <small id="boardInfo">25 × 10 grid</small>
+        <small>25 × 10 grid</small>
       </div>
       <div class="boardWrap">
         <div class="board" id="board">
@@ -291,8 +259,8 @@
   <div class="modal" id="modal">
     <div class="modalCard">
       <h3 id="modalTitle">Preview</h3>
-      <p id="modalText">This is the full image preview. Close to continue.</p>
-      <div id="previewBox" style="display:none; margin: 10px 0 14px; border-radius: 14px; overflow:hidden; border:1px solid rgba(255,255,255,.12);"></div>
+      <p id="modalText">Full image preview (close to continue).</p>
+      <div id="previewBox" style="display:block; margin: 10px 0 14px; border-radius: 14px; overflow:hidden; border:1px solid rgba(255,255,255,.12);"></div>
       <div class="modalRow">
         <button class="btn secondary" id="closeModal">Close</button>
       </div>
@@ -303,23 +271,18 @@
 
   <script>
     /*********************
-     *  Embedded image
+     *  Load image from file
      *********************/
-    const IMAGE_DATA_URL =
-      "data:image/jpeg;base64," +
-      "<?=BASE64_PLACEHOLDER?>";
+    const IMAGE_URL = "./puzzle.jpg";   // <— keep this name the same
 
     /*********************
-     *  Settings
+     *  Puzzle settings
      *********************/
     const COLS = 25;
     const ROWS = 10;
     const TOTAL = COLS * ROWS;
 
-    // Snap distance (in pixels) = min(tileW, tileH) * factor
-    const SNAP_FACTOR = 0.22;
-
-    // Random pile padding
+    const SNAP_FACTOR = 0.22;  // snap distance = min(tileW,tileH) * this
     const PILE_PADDING = 10;
 
     /*********************
@@ -338,7 +301,7 @@
     const previewBoxEl = document.getElementById("previewBox");
 
     const shuffleBtn = document.getElementById("shuffle");
-    const previewBtn = document.getElementById("preview");
+    const togglePreviewBtn = document.getElementById("togglePreview");
     const closeModalBtn = document.getElementById("closeModal");
     const toggleGuideBtn = document.getElementById("toggleGuide");
 
@@ -346,18 +309,16 @@
      *  State
      *********************/
     const img = new Image();
-    img.src = IMAGE_DATA_URL;
+    img.src = IMAGE_URL;
 
     let boardW = 0, boardH = 0;
     let tileW = 0, tileH = 0;
     let snapDist = 0;
 
-    let pieces = []; // {el, id, col, row, correctX, correctY, locked}
+    let pieces = []; // {el, col,row, correctX,correctY, locked, ...}
     let doneCount = 0;
-
     let zTop = 10;
 
-    // Timer
     let startTime = null;
     let timerRAF = null;
 
@@ -376,7 +337,6 @@
       };
       tick();
     }
-
     function stopTimer(){
       if(timerRAF) cancelAnimationFrame(timerRAF);
       timerRAF = null;
@@ -389,27 +349,36 @@
       toast._t = setTimeout(()=>toastEl.classList.remove("show"), 1600);
     }
 
-    /*********************
-     *  Layout / sizing
-     *********************/
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function setPiecePos(piece, x, y, containerEl){
+      piece.el.style.left = x + "px";
+      piece.el.style.top  = y + "px";
+      if(piece.el.parentElement !== containerEl){
+        containerEl.appendChild(piece.el);
+      }
+    }
+
+    function getRelativePos(e, container){
+      const rect = container.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
     function computeBoardSize(){
-      // Board width based on available panel size
       const wrap = boardEl.parentElement; // boardWrap
-      const maxW = wrap.clientWidth - 24; // padding wiggle room
+      const maxW = wrap.clientWidth - 24;
       const maxH = wrap.clientHeight - 24;
 
       const aspect = img.naturalWidth / img.naturalHeight;
 
-      // Fit inside (maxW,maxH) with aspect preserved
       let w = maxW;
       let h = w / aspect;
-
       if(h > maxH){
         h = maxH;
         w = h * aspect;
       }
 
-      // Avoid super tiny pieces
       w = Math.max(320, w);
       h = w / aspect;
 
@@ -429,7 +398,9 @@
       boardEl.style.setProperty("--tileW", tileW + "px");
       boardEl.style.setProperty("--tileH", tileH + "px");
 
-      // Update existing pieces sizes & correct positions
+      gridOverlayEl.style.backgroundSize = `${tileW}px ${tileH}px`;
+
+      // Resize pieces & correct positions
       for(const p of pieces){
         p.correctX = p.col * tileW;
         p.correctY = p.row * tileH;
@@ -440,102 +411,20 @@
         p.el.style.backgroundPosition = `${-p.correctX}px ${-p.correctY}px`;
 
         if(p.locked){
-          // Locked pieces should be exactly in place (board coords)
           setPiecePos(p, p.correctX, p.correctY, boardEl);
         }
       }
-
-      // Grid overlay sizing
-      gridOverlayEl.style.backgroundSize = `${tileW}px ${tileH}px`;
     }
 
-    /*********************
-     *  Helpers: positioning
-     *********************/
-    function setPiecePos(piece, x, y, containerEl){
-      // x,y relative to container
-      piece.el.style.left = x + "px";
-      piece.el.style.top  = y + "px";
-      if(piece.el.parentElement !== containerEl){
-        containerEl.appendChild(piece.el);
-      }
-    }
-
-    function getRelativePos(e, container){
-      const rect = container.getBoundingClientRect();
-      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    }
-
-    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
-
-    function rand(min, max){ return Math.random() * (max - min) + min; }
-
-    /*********************
-     *  Build pieces
-     *********************/
     function clearGame(){
       pieces = [];
       doneCount = 0;
       doneCountEl.textContent = "0";
       pileEl.innerHTML = "";
-      // Keep grid overlay
       [...boardEl.querySelectorAll(".piece")].forEach(n => n.remove());
       startTime = null;
       timeEl.textContent = "00:00";
       stopTimer();
-    }
-
-    function buildPieces(){
-      clearGame();
-      computeBoardSize();
-
-      // Pile bounds
-      const pileRect = pileEl.getBoundingClientRect();
-      const pileW = pileEl.clientWidth;
-      const pileH = pileEl.clientHeight;
-
-      for(let row=0; row<ROWS; row++){
-        for(let col=0; col<COLS; col++){
-          const id = row*COLS + col;
-
-          const el = document.createElement("div");
-          el.className = "piece";
-          el.dataset.id = id;
-
-          const correctX = col * tileW;
-          const correctY = row * tileH;
-
-          el.style.width = tileW + "px";
-          el.style.height = tileH + "px";
-          el.style.backgroundImage = `url("${IMAGE_DATA_URL}")`;
-          el.style.backgroundSize = `${boardW}px ${boardH}px`;
-          el.style.backgroundPosition = `${-correctX}px ${-correctY}px`;
-
-          // Random position in pile
-          const maxX = Math.max(PILE_PADDING, pileW - tileW - PILE_PADDING);
-          const maxY = Math.max(PILE_PADDING, pileH - tileH - PILE_PADDING);
-          const x = rand(PILE_PADDING, maxX);
-          const y = rand(PILE_PADDING, maxY);
-
-          pileEl.appendChild(el);
-          el.style.left = x + "px";
-          el.style.top  = y + "px";
-
-          const piece = {
-            el, id, col, row,
-            correctX, correctY,
-            locked:false,
-            dragging:false,
-            pointerId:null,
-            offsetX:0, offsetY:0
-          };
-
-          attachDrag(piece);
-          pieces.push(piece);
-        }
-      }
-
-      toast("Pieces created: 250");
     }
 
     function attachDrag(piece){
@@ -565,17 +454,14 @@
       el.addEventListener("pointermove", (e) => {
         if(!piece.dragging || piece.pointerId !== e.pointerId) return;
 
-        const currentContainer = el.parentElement;
-
-        // Move inside same container coordinates
-        const pos = getRelativePos(e, currentContainer);
+        const container = el.parentElement;
+        const pos = getRelativePos(e, container);
 
         let x = pos.x - piece.offsetX;
         let y = pos.y - piece.offsetY;
 
-        // Clamp inside container
-        const maxX = (currentContainer.clientWidth - tileW);
-        const maxY = (currentContainer.clientHeight - tileH);
+        const maxX = container.clientWidth - tileW;
+        const maxY = container.clientHeight - tileH;
         x = clamp(x, 0, Math.max(0, maxX));
         y = clamp(y, 0, Math.max(0, maxY));
 
@@ -593,7 +479,6 @@
       piece.dragging = false;
       piece.pointerId = null;
 
-      // If released over the board area (screen position), move to board container first.
       const boardRect = boardEl.getBoundingClientRect();
       const inBoard =
         e.clientX >= boardRect.left &&
@@ -602,61 +487,90 @@
         e.clientY <= boardRect.bottom;
 
       if(inBoard){
-        // Convert current mouse point to board coordinates, keep offset
         const posBoard = getRelativePos(e, boardEl);
         const x = posBoard.x - piece.offsetX;
         const y = posBoard.y - piece.offsetY;
 
-        // Move element to board and set position
         setPiecePos(piece, x, y, boardEl);
-
-        // Snap check (board coords)
         maybeSnap(piece);
-      }else{
-        // If dropped outside board and currently on board, you can leave it.
-        // (Feels natural—optional: send back to pile)
-        // We'll keep it where it is.
       }
     }
 
     function maybeSnap(piece){
-      const el = piece.el;
-      if(el.parentElement !== boardEl) return;
+      if(piece.el.parentElement !== boardEl) return;
 
-      const x = parseFloat(el.style.left) || 0;
-      const y = parseFloat(el.style.top) || 0;
+      const x = parseFloat(piece.el.style.left) || 0;
+      const y = parseFloat(piece.el.style.top) || 0;
 
-      const dx = (x - piece.correctX);
-      const dy = (y - piece.correctY);
+      const dx = x - piece.correctX;
+      const dy = y - piece.correctY;
 
       if(Math.hypot(dx, dy) <= snapDist){
-        // Lock into place
         setPiecePos(piece, piece.correctX, piece.correctY, boardEl);
         piece.locked = true;
-        el.classList.add("locked");
-        el.style.zIndex = "1";
-        el.releasePointerCapture?.(piece.pointerId);
+        piece.el.classList.add("locked");
+        piece.el.style.zIndex = "1";
 
         doneCount++;
         doneCountEl.textContent = String(doneCount);
 
-        if(doneCount % 10 === 0) toast(`Nice! ${doneCount}/250`);
-
+        if(doneCount % 25 === 0) toast(`Nice! ${doneCount}/250`);
         if(doneCount === TOTAL){
           stopTimer();
-          showWin();
+          openModal("You finished! 🎉", `250/250 pieces completed in ${timeEl.textContent}.`, true);
         }
       }
     }
 
-    /*********************
-     *  Shuffle
-     *********************/
-    function shufflePieces(){
-      // Re-randomize all unlocked pieces in pile
+    function buildPieces(){
+      clearGame();
+      computeBoardSize();
+
       const pileW = pileEl.clientWidth;
       const pileH = pileEl.clientHeight;
 
+      for(let row=0; row<ROWS; row++){
+        for(let col=0; col<COLS; col++){
+          const el = document.createElement("div");
+          el.className = "piece";
+
+          const correctX = col * tileW;
+          const correctY = row * tileH;
+
+          el.style.width = tileW + "px";
+          el.style.height = tileH + "px";
+          el.style.backgroundImage = `url("${IMAGE_URL}")`;
+          el.style.backgroundSize = `${boardW}px ${boardH}px`;
+          el.style.backgroundPosition = `${-correctX}px ${-correctY}px`;
+
+          const maxX = Math.max(PILE_PADDING, pileW - tileW - PILE_PADDING);
+          const maxY = Math.max(PILE_PADDING, pileH - tileH - PILE_PADDING);
+          const x = rand(PILE_PADDING, maxX);
+          const y = rand(PILE_PADDING, maxY);
+
+          pileEl.appendChild(el);
+          el.style.left = x + "px";
+          el.style.top  = y + "px";
+
+          const piece = {
+            el, col, row,
+            correctX, correctY,
+            locked:false,
+            dragging:false,
+            pointerId:null,
+            offsetX:0, offsetY:0
+          };
+
+          attachDrag(piece);
+          pieces.push(piece);
+        }
+      }
+      toast("Pieces created: 250");
+    }
+
+    function shufflePieces(){
+      const pileW = pileEl.clientWidth;
+      const pileH = pileEl.clientHeight;
       let moved = 0;
 
       for(const p of pieces){
@@ -673,57 +587,30 @@
         p.el.style.zIndex = (++zTop).toString();
         moved++;
       }
-
       toast(`Shuffled ${moved} pieces`);
     }
 
-    /*********************
-     *  Modal: preview / win
-     *********************/
     function openModal(title, text, showPreview){
       modalTitleEl.textContent = title;
       modalTextEl.textContent = text;
 
       previewBoxEl.innerHTML = "";
-      previewBoxEl.style.display = showPreview ? "block" : "none";
-
       if(showPreview){
-        const imgEl = document.createElement("img");
-        imgEl.src = IMAGE_DATA_URL;
-        imgEl.alt = "Puzzle preview";
-        imgEl.style.width = "100%";
-        imgEl.style.display = "block";
-        previewBoxEl.appendChild(imgEl);
+        const im = document.createElement("img");
+        im.src = IMAGE_URL;
+        im.alt = "Puzzle preview";
+        im.style.width = "100%";
+        im.style.display = "block";
+        previewBoxEl.appendChild(im);
       }
-
       modalEl.classList.add("show");
     }
+    function closeModal(){ modalEl.classList.remove("show"); }
 
-    function closeModal(){
-      modalEl.classList.remove("show");
-    }
-
-    function showWin(){
-      openModal(
-        "You finished! 🎉",
-        `250/250 pieces completed in ${timeEl.textContent}.`,
-        true
-      );
-    }
-
-    /*********************
-     *  Controls
-     *********************/
     shuffleBtn.addEventListener("click", shufflePieces);
-
-    previewBtn.addEventListener("click", () => {
-      openModal("Preview", "Full image preview (close to continue).", true);
-    });
-
+    togglePreviewBtn.addEventListener("click", () => openModal("Preview", "Full image preview (close to continue).", true));
     closeModalBtn.addEventListener("click", closeModal);
-    modalEl.addEventListener("click", (e) => {
-      if(e.target === modalEl) closeModal();
-    });
+    modalEl.addEventListener("click", (e) => { if(e.target === modalEl) closeModal(); });
 
     let gridOn = true;
     toggleGuideBtn.addEventListener("click", () => {
@@ -732,33 +619,28 @@
       toast(gridOn ? "Grid on" : "Grid off");
     });
 
-    window.addEventListener("resize", () => {
-      // Recompute board (keeps locked pieces correct)
-      computeBoardSize();
-    });
+    window.addEventListener("resize", () => computeBoardSize());
 
-    /*********************
-     *  Init
-     *********************/
     img.onload = () => {
-      // Build after image loads
+      // Build and shuffle once image loads
       buildPieces();
-      // Start with a good shuffle feel
       shufflePieces();
+      // Also preload preview image inside modal box
+      const im = document.createElement("img");
+      im.src = IMAGE_URL;
+      im.alt = "Puzzle preview";
+      im.style.width = "100%";
+      im.style.display = "block";
+      previewBoxEl.appendChild(im);
     };
 
     img.onerror = () => {
-      openModal("Error", "Could not load the embedded image.", false);
+      openModal(
+        "Error",
+        "Could not load puzzle.jpg. Make sure the file is named exactly 'puzzle.jpg' and is in the same folder as index.html.",
+        false
+      );
     };
-
-    /*********************
-     *  IMPORTANT:
-     *  Replace placeholder with actual base64 below.
-     *********************/
-  </script>
-
-  <script>
-    // Replace the placeholder in IMAGE_DATA_URL with the real Base64 (injected below)
   </script>
 </body>
 </html>
